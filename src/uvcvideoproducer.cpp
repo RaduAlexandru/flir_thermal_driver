@@ -1,6 +1,7 @@
 #include "uvcvideoproducer.hpp"
 #include "uvcacquisition.hpp"
-
+#include <ros/ros.h>
+#include <cv_bridge/cv_bridge.h>
 UvcVideoProducer::UvcVideoProducer(QObject *parent)
     : QObject(parent)
     //, m_surface(NULL)
@@ -47,20 +48,20 @@ void UvcVideoProducer::setUvc(UvcAcquisition *uvc)
 //        m_surface->start(uvc->videoFormat());
 //    }
 
-    connect(m_uvc, &UvcAcquisition::frameReady,
+    bool success = connect(m_uvc, &UvcAcquisition::frameReady,
             this, &UvcVideoProducer::onNewVideoContentReceived);
-    printf("setting UVC done.");
+    printf("setting UVC done: ");
+    if ( success ) printf("successful.\n");
+    else printf("failed.\n");
 }
 
 void UvcVideoProducer::onNewVideoContentReceived(const QVideoFrame &frame)
 {
-#ifdef USE_ROS
+    printf("receiving.\n");
+
+    std::cout << "publishing."<< std::endl;
     QImage img( frame.bits(), frame.width(), frame.height(), frame.bytesPerLine(), QVideoFrame::imageFormatFromPixelFormat( frame.pixelFormat() ) );
     img = img.convertToFormat(QImage::Format_RGB888).rgbSwapped(); // from BGR to RGB
-    cv::Mat cv_img(img.height(), img.width(), CV_8UC3, const_cast<uchar*>(img.bits()), img.bytesPerLine());
-    cv_bridge::CvImage msg = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::RGB8, cv_img);
-#endif
 
-    //if (m_surface)
-    //    m_surface->present(frame);
+    emit newImage( img ) ;
 }

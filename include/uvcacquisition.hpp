@@ -39,6 +39,7 @@ public:
 
 signals:
     void frameReady(const QVideoFrame &frame);
+    void imageReady(const QImage & image);
     void formatChanged(const QVideoSurfaceFormat &format);
     void cciChanged(AbstractCCInterface *format);
     void dataFormatterChanged(AbstractCCInterface *format);
@@ -63,6 +64,7 @@ protected:
 private:
     static void cb(uvc_frame_t *frame, void *ptr);
     void emitFrameReady(const QVideoFrame &frame);
+    void emitImageReady(const QVideoFrame &frame);
     void init();
     QList<UsbId> _ids;
 };

@@ -3,9 +3,20 @@ project ( flir_boson_driver )
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+# Instruct CMake to run moc automatically when needed
+set(CMAKE_AUTOMOC ON)
+# Create code from a list of Qt designer ui files
+set(CMAKE_AUTOUIC ON)
+
 
 set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread" )
 SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -std=c++11 -pthread " )
+
+# Find the QtWidgets library
+find_package(Qt5Core CONFIG REQUIRED)
+find_package(Qt5Widgets CONFIG REQUIRED)
+find_package(Qt5Multimedia CONFIG REQUIRED)
+find_package(Qt5Qml CONFIG REQUIRED)
 
 find_package(PkgConfig)
 pkg_check_modules(LIBUSB libusb-1.0)
@@ -36,10 +47,29 @@ include_directories (
    ${catkin_INCLUDE_DIRS}
 )
 
+QT5_WRAP_CPP ( moc_uvcacq include/uvcacquisition.hpp )
+QT5_WRAP_CPP ( moc_acc include/abstractccinterface.hpp )
+QT5_WRAP_CPP ( moc_bv include/bosonvariation.hpp )
+QT5_WRAP_CPP ( moc_uvcvp include/uvcvideoproducer.hpp )
+QT5_WRAP_CPP ( moc_ros include/ros_thread.hpp )
+
+# Populate a CMake variable with the sources
 set( srcs
-    src/ros_main.cpp
-    src/boson_node.cpp
-    src/boson_interface.cpp
+    #mainwindow.ui
+    #mainwindow.cpp
+    src/main.cpp
+    ${moc_uvcacq}
+    ${moc_uvcvp}
+    ${moc_acc}
+    ${moc_bv}
+    ${moc_ros}
+    src/ros_thread.cpp
+    src/uvcvideoproducer.cpp
+    src/uvcacquisition.cpp
+    src/abstractccinterface.cpp
+    src/uvcbuffer.cpp
+    src/abstractccinterface.cpp
+    src/bosonvariation.cpp
     boson_sdk/Client_API.c 
     boson_sdk/Client_Dispatcher.c
     boson_sdk/Client_Packager.c
@@ -58,5 +88,7 @@ message ( STATUS "${PROJECT_SOURCE_DIR}")
 
 # Tell CMake to create the helloworld executable
 add_executable( ${PROJECT_NAME} ${srcs} )
-target_link_libraries( ${PROJECT_NAME} ${LIBUSB_LIBRARIES} ${UVC_LOCATION}  ${catkin_LIBRARIES} )
+qt5_use_modules ( ${PROJECT_NAME} Widgets Core Multimedia Qml)
+# Use the Widgets module from Qt 5
+target_link_libraries( ${PROJECT_NAME} ${LIBUSB_LIBRARIES} ${UVC_LOCATION} Qt5::Core Qt5::Widgets  Qt5::Multimedia Qt5::Qml  ${catkin_LIBRARIES} )
 

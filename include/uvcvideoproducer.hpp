@@ -21,12 +21,13 @@ public:
 signals:
     //void surfaceChanged(QAbstractVideoSurface *surface);
     void uvcChanged(UvcAcquisition *uvc);
+    void newImage( const QImage & );
 
 public slots:
     void onNewVideoContentReceived(const QVideoFrame &frame);
 
 private:
-    QAbstractVideoSurface *m_surface;
+    //QAbstractVideoSurface *m_surface;
     UvcAcquisition *m_uvc;
 };
 

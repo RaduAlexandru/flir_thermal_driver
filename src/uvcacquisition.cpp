@@ -2,6 +2,7 @@
 #include "uvcbuffer.hpp"
 #include <QList>
 #include <libuvc/libuvc.h>
+#include <iostream>
 
 //#include "leptonvariation.hpp"
 #include "bosonvariation.hpp"
@@ -151,12 +152,15 @@ void UvcAcquisition::setVideoFormat(const QVideoSurfaceFormat &format)
     {
     case QVideoFrame::Format_YUV420P:
         uvcFormat = UVC_FRAME_FORMAT_I420;
+        std::cout << "format: YUV420P " <<  format.frameWidth() << " " << format.frameHeight() << std::endl;
         break;
     case QVideoFrame::Format_RGB24:
         uvcFormat = UVC_FRAME_FORMAT_RGB;
+        std::cout << "format: RGB24 " <<  format.frameWidth() << " " << format.frameHeight() << std::endl;
         break;
     case QVideoFrame::Format_Y16:
         uvcFormat = UVC_FRAME_FORMAT_Y16;
+        std::cout << "format: Y16 " <<  format.frameWidth() << " " << format.frameHeight() << std::endl;
         break;
     default:
         uvcFormat = UVC_FRAME_FORMAT_UNKNOWN;
@@ -266,6 +270,7 @@ void UvcAcquisition::cb(uvc_frame_t *frame, void *ptr) {
             qframe.unmap();
         }
         _this->emitFrameReady(qframe);
+        _this->emitImageReady(qframe);
     }
     else
     {
@@ -273,13 +278,25 @@ void UvcAcquisition::cb(uvc_frame_t *frame, void *ptr) {
         buffer->setBackendBuffer((uchar*)frame->data, frame->width, frame->height, frame->step, frame->data_bytes);
         QVideoFrame qframe(buffer, _this->m_format.frameSize(), _this->m_format.pixelFormat());
         _this->emitFrameReady(qframe);
+        _this->emitImageReady(qframe);
     }
+    printf("got new.\n");
 }
 
 void UvcAcquisition::emitFrameReady(const QVideoFrame &frame)
 {
-    emit frameReady(frame);
+   // printf("emitting.\n");
+    //emit frameReady(frame);
 }
+
+void UvcAcquisition::emitImageReady(const QVideoFrame &frame)
+{
+    printf("emitting img.\n");
+    QImage img( frame.bits(), frame.width(), frame.height(), frame.bytesPerLine(), QVideoFrame::imageFormatFromPixelFormat( frame.pixelFormat() ) );
+    img = img.convertToFormat(QImage::Format_RGB888).rgbSwapped(); // from BGR to RGB
+    emit imageReady(img);
+}
+
 
 void UvcAcquisition::pauseStream() {
     uvc_stop_streaming(devh);
