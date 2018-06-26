@@ -20,7 +20,7 @@ BosonNode::BosonNode( )
     , m_bi ( NULL )
     , m_it ( ros::NodeHandle("~" ) )
 {
-    m_pub = m_it.advertise("camera/image", 1);
+    m_pub = m_it.advertiseCamera("camera/image", 5);
     m_ids.push_back({ PT1_VID, PT1_PID });
     m_ids.push_back({ FLIR_VID, 0x0000 }); // any flir camera
     init();
@@ -205,21 +205,51 @@ void BosonNode::cb(uvc_frame_t *frame, void *ptr)
 {
     ros::Time rec = ros::Time::now();
     BosonNode *_this = static_cast<BosonNode*>(ptr);
+    static sensor_msgs::CameraInfoPtr cameraInfo;
     static std_msgs::Header header;
     static bool notInitialized = true;
     if ( notInitialized )
     {
+        notInitialized = false;
         header.seq = 0;
-        header.frame_id = "/thermal_cam";
+        header.frame_id = "/thermal";
+        cameraInfo = sensor_msgs::CameraInfoPtr ( new sensor_msgs::CameraInfo );
+        cameraInfo->height = frame->height;
+        cameraInfo->width = frame->width;
+        cameraInfo->distortion_model = "plumb_bob";
+        cameraInfo->binning_x = 1;
+        cameraInfo->binning_y = 1;
+        cameraInfo->D.resize(5,0);
+        // K
+        for ( int i = 0; i < cameraInfo->K.size(); ++i) cameraInfo->K[i] = 0;
+        cameraInfo->K[0] = frame->width; // fx
+        cameraInfo->K[2] = frame->width/2; // cx
+        cameraInfo->K[4] = frame->width; // fy
+        cameraInfo->K[5] = frame->height/2; // cy
+        cameraInfo->K[8] = 1;
+        // R=Id
+        for ( int i = 0; i < cameraInfo->R.size(); ++i) cameraInfo->R[i] = 0;
+        cameraInfo->R[0] = 1;
+        cameraInfo->R[4] = 1;
+        cameraInfo->R[8] = 1;
+        // P=K
+        for ( int i = 0; i < cameraInfo->P.size(); ++i) cameraInfo->P[i] = 0;
+        cameraInfo->P[0] = frame->width; // fx
+        cameraInfo->P[2] = frame->width/2; // cx
+        cameraInfo->P[5] = frame->width; // fy
+        cameraInfo->P[7] = frame->height/2; // cy
+        cameraInfo->P[10] = 1;
     }
     ++header.seq;
     header.stamp = rec;
+    cameraInfo->header = header;
+
     cv_bridge::CvImage msg;
     if ( _this->m_cur_format == BosonInterface::VideoFormat::Y16 )
     {
         cv::Mat cv_img ( frame->height, frame->width, CV_16UC1, frame->data, frame->step );
         msg = cv_bridge::CvImage( header, sensor_msgs::image_encodings::MONO16, cv_img);
-        _this->m_pub.publish( msg.toImageMsg() );
+        _this->m_pub.publish( msg.toImageMsg(), cameraInfo );
     }
     if ( _this->m_cur_format == BosonInterface::VideoFormat::YUV420P )
     {
@@ -230,7 +260,7 @@ void BosonNode::cb(uvc_frame_t *frame, void *ptr)
             cv::Mat cv_img ( outFrame->height, outFrame->width, CV_8UC3, outFrame->data, outFrame->step );
             msg = cv_bridge::CvImage( header, sensor_msgs::image_encodings::RGB8, cv_img );
         }
-        _this->m_pub.publish( msg.toImageMsg() );
+        _this->m_pub.publish( msg.toImageMsg(), cameraInfo );
         uvc_free_frame ( outFrame );
     }
 }

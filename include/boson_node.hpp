@@ -36,7 +36,7 @@ protected:
     BosonInterface::VideoFormat m_cur_format;
 private:
     image_transport::ImageTransport m_it;
-    image_transport::Publisher m_pub;
+    image_transport::CameraPublisher m_pub;
 
     static void cb(uvc_frame_t *frame, void *ptr);
 };
