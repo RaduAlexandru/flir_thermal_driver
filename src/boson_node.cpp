@@ -203,13 +203,22 @@ void BosonNode::setVideoFormat(const BosonInterface::VideoFormat &format, const 
  * input queue. If this function takes too long, you'll start losing frames. */
 void BosonNode::cb(uvc_frame_t *frame, void *ptr)
 {
+    ros::Time rec = ros::Time::now();
     BosonNode *_this = static_cast<BosonNode*>(ptr);
-
-    cv_bridge::CvImage msg ;
+    static std_msgs::Header header;
+    static bool notInitialized = true;
+    if ( notInitialized )
+    {
+        header.seq = 0;
+        header.frame_id = "/thermal_cam";
+    }
+    ++header.seq;
+    header.stamp = rec;
+    cv_bridge::CvImage msg;
     if ( _this->m_cur_format == BosonInterface::VideoFormat::Y16 )
     {
         cv::Mat cv_img ( frame->height, frame->width, CV_16UC1, frame->data, frame->step );
-        msg = cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::MONO16, cv_img);
+        msg = cv_bridge::CvImage( header, sensor_msgs::image_encodings::MONO16, cv_img);
         _this->m_pub.publish( msg.toImageMsg() );
     }
     if ( _this->m_cur_format == BosonInterface::VideoFormat::YUV420P )
@@ -219,7 +228,7 @@ void BosonNode::cb(uvc_frame_t *frame, void *ptr)
         if (res >= 0)
         {
             cv::Mat cv_img ( outFrame->height, outFrame->width, CV_8UC3, outFrame->data, outFrame->step );
-            msg = cv_bridge::CvImage( std_msgs::Header(), sensor_msgs::image_encodings::RGB8, cv_img );
+            msg = cv_bridge::CvImage( header, sensor_msgs::image_encodings::RGB8, cv_img );
         }
         _this->m_pub.publish( msg.toImageMsg() );
         uvc_free_frame ( outFrame );
