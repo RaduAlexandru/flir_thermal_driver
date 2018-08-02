@@ -10,7 +10,8 @@
     /thermal/flir_boson_node/camera/image
     /thermal/flir_boson_node/camera/camera_info
     -b 0
-    -o /home/jquenzel/bags/flir_stereo_thermal"/>
+   -o /home/jquenzel/bags/flir_stereo_thermal"/>
+   <!-- -o /media/jquenzel/4d4598d7-28e0-4faf-81cb-f91eb9b11d7f/camera_rig/flir_stereo_thermal"/-->
 
     <!--
     /stereo_left/image_raw/compressed

@@ -74,10 +74,11 @@
 
                 <param name="enable_strobe1" value="true"/>
     </node>
-  
+
+<!--  
   <node pkg="flir_boson_driver" type="flir_boson_driver" name="flir_boson_node" output="screen" ns="thermal">
    </node>
-
+-->
    <!--
    <node pkg="camera_info_provider" type="camera_info_provider_node" name="camera_info_provider_node" output="screen" ns="thermal">
     <param name="readCamInfoFromFile" value="true"/>
