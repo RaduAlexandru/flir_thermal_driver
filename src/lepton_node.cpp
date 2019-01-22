@@ -1,4 +1,4 @@
-#include "boson_node.hpp"
+#include "lepton_node.hpp"
 #include <ros/ros.h>
 #include <libuvc/libuvc.h>
 #include <cv_bridge/cv_bridge.h>
@@ -13,20 +13,20 @@
 #define PT1_PID 0x0100
 #define FLIR_VID 0x09cb
 
-BosonNode::BosonNode( )
+LeptonNode::LeptonNode( )
     : m_ctx(NULL)
     , m_dev(NULL)
     , m_devh(NULL)
     , m_bi ( NULL )
     , m_it ( ros::NodeHandle("~" ) )
 {
-    m_pub = m_it.advertiseCamera("boson/image", 5);
-    //m_ids.push_back({ PT1_VID, PT1_PID });
-    m_ids.push_back({ FLIR_VID, 0x0000 }); // any flir camera
+    m_pub = m_it.advertiseCamera("lepton/image", 5);
+    m_ids.push_back({ PT1_VID, PT1_PID });
+    //m_ids.push_back({ FLIR_VID, 0x0000 }); // any flir camera
     init();
 }
 
-BosonNode::~BosonNode()
+LeptonNode::~LeptonNode()
 {
     if (m_bi != NULL)
     {
@@ -59,7 +59,7 @@ BosonNode::~BosonNode()
     m_isRunning = false;
 }
 
-void BosonNode::init()
+void LeptonNode::init()
 {
     uvc_error_t res;
 
@@ -114,8 +114,8 @@ void BosonNode::init()
     uvc_device_descriptor_t *desc;
     uvc_get_device_descriptor(m_dev, &desc);
 
-    if (desc->idVendor == FLIR_VID )
-        m_bi = new BosonInterface( m_ctx, m_dev, m_devh );
+    if (desc->idVendor == PT1_VID )
+        m_bi = new LeptonInterface( m_ctx, m_dev, m_devh );
 
     uvc_free_device_descriptor( desc );
 
@@ -126,7 +126,7 @@ void BosonNode::init()
 }
 
 
-void BosonNode::setVideoFormat(const BosonInterface::VideoFormat &format, const int frameHeight, const int frameWidth )
+void LeptonNode::setVideoFormat(const LeptonInterface::VideoFormat &format, const int frameHeight, const int frameWidth )
 {
     uvc_error_t res;
     enum uvc_frame_format uvcFormat;
@@ -136,13 +136,13 @@ void BosonNode::setVideoFormat(const BosonInterface::VideoFormat &format, const 
     m_cur_format = format;
     switch( format )
     {
-    case BosonInterface::VideoFormat::YUV420P:
+    case LeptonInterface::VideoFormat::YUV420P:
         uvcFormat = UVC_FRAME_FORMAT_I420;
         break;
-    case BosonInterface::VideoFormat::RGB24:
+    case LeptonInterface::VideoFormat::RGB24:
         uvcFormat = UVC_FRAME_FORMAT_RGB;
         break;
-    case BosonInterface::VideoFormat::Y16:
+    case LeptonInterface::VideoFormat::Y16:
         uvcFormat = UVC_FRAME_FORMAT_Y16;
         break;
     default:
@@ -186,7 +186,7 @@ void BosonNode::setVideoFormat(const BosonInterface::VideoFormat &format, const 
     /* Start the video stream. The library will call user function cb:
      *   cb(frame, (void*) 12345)
      */
-    res = uvc_start_streaming(m_devh, &m_ctrl, BosonNode::cb, this, 0);
+    res = uvc_start_streaming(m_devh, &m_ctrl, LeptonNode::cb, this, 0);
 
     if (res < 0) {
         uvc_perror(res, "start_streaming"); /* unable to start stream */
@@ -201,10 +201,10 @@ void BosonNode::setVideoFormat(const BosonInterface::VideoFormat &format, const 
 /* This callback function runs once per frame. Use it to perform any
  * quick processing you need, or have it put the frame into your application's
  * input queue. If this function takes too long, you'll start losing frames. */
-void BosonNode::cb(uvc_frame_t *frame, void *ptr)
+void LeptonNode::cb(uvc_frame_t *frame, void *ptr)
 {
     ros::Time rec = ros::Time::now();
-    BosonNode *_this = static_cast<BosonNode*>(ptr);
+    LeptonNode *_this = static_cast<LeptonNode*>(ptr);
     static sensor_msgs::CameraInfoPtr cameraInfo;
     static std_msgs::Header header;
     static bool notInitialized = true;
@@ -245,13 +245,13 @@ void BosonNode::cb(uvc_frame_t *frame, void *ptr)
     cameraInfo->header = header;
 
     cv_bridge::CvImage msg;
-    if ( _this->m_cur_format == BosonInterface::VideoFormat::Y16 )
+    if ( _this->m_cur_format == LeptonInterface::VideoFormat::Y16 )
     {
         cv::Mat cv_img ( frame->height, frame->width, CV_16UC1, frame->data, frame->step );
         msg = cv_bridge::CvImage( header, sensor_msgs::image_encodings::MONO16, cv_img);
         _this->m_pub.publish( msg.toImageMsg(), cameraInfo );
     }
-    if ( _this->m_cur_format == BosonInterface::VideoFormat::YUV420P )
+    if ( _this->m_cur_format == LeptonInterface::VideoFormat::YUV420P )
     {
         uvc_frame_t *outFrame = uvc_allocate_frame( frame->width * frame->height * 3 );
         uvc_error_t res = uvc_i4202bgr( frame, outFrame );
@@ -265,15 +265,15 @@ void BosonNode::cb(uvc_frame_t *frame, void *ptr)
     }
 }
 
-void BosonNode::pauseStream()
+void LeptonNode::pauseStream()
 {
     uvc_stop_streaming(m_devh);
     ROS_INFO("Stream paused.");
 }
 
-void BosonNode::resumeStream()
+void LeptonNode::resumeStream()
 {
-    uvc_error_t res = uvc_start_streaming(m_devh, &m_ctrl, BosonNode::cb, this, 0);
+    uvc_error_t res = uvc_start_streaming(m_devh, &m_ctrl, LeptonNode::cb, this, 0);
     if (res < 0)
     {
         uvc_perror(res, "start_streaming"); /* unable to start stream */

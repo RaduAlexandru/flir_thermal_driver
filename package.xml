@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>flir_boson_driver</name>
+  <name>flir_thermal_driver</name>
   <version>0.0.0</version>
   <description>The flir_boson_driver package</description>
 

@@ -1,0 +1,6 @@
+<launch>
+
+  <node pkg="flir_thermal_driver" type="flir_thermal_driver" name="flir_thermal_node" output="screen" ns="thermal">
+   </node>
+
+</launch>

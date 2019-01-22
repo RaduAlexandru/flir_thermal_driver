@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
-project ( flir_boson_driver )
+project ( flir_thermal_driver )
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -27,20 +27,21 @@ catkin_package(
   CATKIN_DEPENDS cmake_modules roscpp roslib
 )
 
-include_directories ( 
+include_directories (
    libuvc/build/include
    libuvc/include
    boson_sdk
-    ${LIBUSB_INCLUDE_DIRS}
-   include 
+   lepton_sdk
+   ${LIBUSB_INCLUDE_DIRS}
+   include
    ${catkin_INCLUDE_DIRS}
 )
 
-set( srcs
-    src/ros_main.cpp
+set( boson_srcs
+    src/boson_main.cpp
     src/boson_node.cpp
     src/boson_interface.cpp
-    boson_sdk/Client_API.c 
+    boson_sdk/Client_API.c
     boson_sdk/Client_Dispatcher.c
     boson_sdk/Client_Packager.c
     boson_sdk/Example.c
@@ -52,11 +53,27 @@ set( srcs
     boson_sdk/libusb_binary_protocol.c
 )
 
-find_library (  UVC_LOCATION NAMES libuvcstatic.a uvcstatic HINTS ${PROJECT_SOURCE_DIR}/libuvc/build ) 
-message ( STATUS "${UVC_LOCATION}" )
-message ( STATUS "${PROJECT_SOURCE_DIR}")
+set( lepton_srcs
+    src/lepton_main.cpp
+    src/lepton_node.cpp
+    src/lepton_interface.cpp
+    lepton_sdk/LEPTON_AGC.c
+    lepton_sdk/LEPTON_OEM.c
+    lepton_sdk/LEPTON_RAD.c
+    lepton_sdk/LEPTON_SDK.c
+    lepton_sdk/LEPTON_SYS.c
+    lepton_sdk/LEPTON_VID.c
+    lepton_sdk/crc16fast.c
+)
 
-# Tell CMake to create the helloworld executable
-add_executable( ${PROJECT_NAME} ${srcs} )
-target_link_libraries( ${PROJECT_NAME} ${LIBUSB_LIBRARIES} ${UVC_LOCATION}  ${catkin_LIBRARIES} )
+find_library (  UVC_LOCATION NAMES libuvcstatic.a uvcstatic HINTS ${PROJECT_SOURCE_DIR}/libuvc/build ) 
+message ( ERROR " ${UVC_LOCATION}" )
+message ( ERROR " ${PROJECT_SOURCE_DIR}")
+message ( ERROR " ${LIBUSB_LIBRARIES}")
+
+add_executable( ${PROJECT_NAME}_boson ${boson_srcs} )
+target_link_libraries( ${PROJECT_NAME}_boson ${UVC_LOCATION} ${LIBUSB_LIBRARIES}  ${catkin_LIBRARIES} )
+
+add_executable( ${PROJECT_NAME}_lepton ${lepton_srcs} )
+target_link_libraries( ${PROJECT_NAME}_lepton ${UVC_LOCATION} ${LIBUSB_LIBRARIES} ${catkin_LIBRARIES} )
 
