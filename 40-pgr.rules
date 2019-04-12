@@ -26,6 +26,7 @@ ATTRS{idVendor}=="1e10", ATTRS{idProduct}=="3109", MODE="0666", GROUP="pgrimagin
 ATTRS{idVendor}=="1e10", ATTRS{idProduct}=="3300", MODE="0666", GROUP="pgrimaging"
 ATTRS{idVendor}=="1e10", ATTRS{idProduct}=="4000", MODE="0666", GROUP="pgrimaging"
 ATTRS{idVendor}=="09cb", ATTRS{idProduct}=="4007", MODE="0666", GROUP="pgrimaging"
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e4e", ATTRS{idProduct}=="0100", SYMLINK+="pt1", GROUP="usb", MODE="666"
 KERNEL=="raw1394", MODE="0666", GROUP="pgrimaging"
 KERNEL=="video1394*", MODE="0666", GROUP="pgrimaging"
 KERNEL=="fw*", SUBSYSTEM=="firewire", ATTR{vendor}=="0x00b09d", MODE="0666", GROUP="pgrimaging"
