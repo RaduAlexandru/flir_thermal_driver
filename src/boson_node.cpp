@@ -212,7 +212,7 @@ void BosonNode::cb(uvc_frame_t *frame, void *ptr)
     {
         notInitialized = false;
         header.seq = 0;
-        header.frame_id = "/thermal";
+        header.frame_id = "thermal";
         cameraInfo = sensor_msgs::CameraInfoPtr ( new sensor_msgs::CameraInfo );
         cameraInfo->height = frame->height;
         cameraInfo->width = frame->width;
@@ -222,10 +222,10 @@ void BosonNode::cb(uvc_frame_t *frame, void *ptr)
         cameraInfo->D.resize(5,0);
         // K
         for ( int i = 0; i < cameraInfo->K.size(); ++i) cameraInfo->K[i] = 0;
-        cameraInfo->K[0] = frame->width; // fx
-        cameraInfo->K[2] = frame->width/2; // cx
-        cameraInfo->K[4] = frame->width; // fy
-        cameraInfo->K[5] = frame->height/2; // cy
+        cameraInfo->K[0] = 715.2;//frame->width; // fx
+        cameraInfo->K[2] = 462.1;//frame->width/2; // cx
+        cameraInfo->K[4] = 731.9;//frame->width; // fy
+        cameraInfo->K[5] = 395.3;//frame->height/2; // cy
         cameraInfo->K[8] = 1;
         // R=Id
         for ( int i = 0; i < cameraInfo->R.size(); ++i) cameraInfo->R[i] = 0;
@@ -234,10 +234,10 @@ void BosonNode::cb(uvc_frame_t *frame, void *ptr)
         cameraInfo->R[8] = 1;
         // P=K
         for ( int i = 0; i < cameraInfo->P.size(); ++i) cameraInfo->P[i] = 0;
-        cameraInfo->P[0] = frame->width; // fx
-        cameraInfo->P[2] = frame->width/2; // cx
-        cameraInfo->P[5] = frame->width; // fy
-        cameraInfo->P[7] = frame->height/2; // cy
+        cameraInfo->P[0] = cameraInfo->K[0];//frame->width; // fx
+        cameraInfo->P[2] = cameraInfo->K[2];//frame->width/2; // cx
+        cameraInfo->P[5] = cameraInfo->K[4];//frame->width; // fy
+        cameraInfo->P[7] = cameraInfo->K[5];//frame->height/2; // cy
         cameraInfo->P[10] = 1;
     }
     ++header.seq;
