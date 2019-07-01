@@ -1,0 +1,5 @@
+<!-- Starts a FLIR lepton thermal camera -->
+<launch>
+  <node pkg="flir_thermal_driver" type="flir_thermal_driver_lepton" name="flir_lepton_node" output="screen" ns="thermal">
+   </node>
+</launch>

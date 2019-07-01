@@ -1,8 +1,5 @@
-<!-- Starts both cameras in InventAiry setup of MBZIRC2 copter -->
+<!-- Start a FLIR boson camera -->
 <launch>
-  <!-- env name="ROSCONSOLE_CONFIG_FILE" value="$(find genicam_driver)/debug_rosconsole.conf"/ -->
-
-  <node pkg="flir_boson_driver" type="flir_boson_driver" name="flir_boson_node" output="screen" ns="thermal">
+  <node pkg="flir_thermal_driver" type="flir_thermal_driver_boson" name="flir_boson_node" output="screen" ns="thermal">
    </node>
-
 </launch>
