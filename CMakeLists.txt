@@ -28,14 +28,16 @@ catkin_package(
 )
 
 include_directories (
-   libuvc/build/include
-   libuvc/include
+   ${CMAKE_BINARY_DIR}/libuvc/include
+   ${PROJECT_SOURCE_DIR}/libuvc/include
    boson_sdk
    lepton_sdk
    ${LIBUSB_INCLUDE_DIRS}
    include
    ${catkin_INCLUDE_DIRS}
 )
+add_subdirectory(${PROJECT_SOURCE_DIR}/libuvc)
+
 
 set( boson_srcs
     src/boson_main.cpp
@@ -66,14 +68,9 @@ set( lepton_srcs
     lepton_sdk/crc16fast.c
 )
 
-find_library (  UVC_LOCATION NAMES libuvcstatic.a uvcstatic HINTS ${PROJECT_SOURCE_DIR}/libuvc/build ) 
-message ( ERROR " ${UVC_LOCATION}" )
-message ( ERROR " ${PROJECT_SOURCE_DIR}")
-message ( ERROR " ${LIBUSB_LIBRARIES}")
-
 add_executable( ${PROJECT_NAME}_boson ${boson_srcs} )
-target_link_libraries( ${PROJECT_NAME}_boson ${UVC_LOCATION} ${LIBUSB_LIBRARIES}  ${catkin_LIBRARIES} )
+target_link_libraries( ${PROJECT_NAME}_boson uvcstatic ${LIBUSB_LIBRARIES}  ${catkin_LIBRARIES} )
 
 add_executable( ${PROJECT_NAME}_lepton ${lepton_srcs} )
-target_link_libraries( ${PROJECT_NAME}_lepton ${UVC_LOCATION} ${LIBUSB_LIBRARIES} ${catkin_LIBRARIES} )
+target_link_libraries( ${PROJECT_NAME}_lepton uvcstatic ${LIBUSB_LIBRARIES} ${catkin_LIBRARIES} )
 
