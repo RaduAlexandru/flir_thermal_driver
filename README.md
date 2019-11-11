@@ -3,11 +3,16 @@ driver for FLIR Boson 640 thermal camera.
 installation: 
 catkin build --this
 
-copy 40-pgr.rules to /etc/udev/rules.d/
-udevadm control --reload-rules && udevadm trigger
+sudo cp 99-flir.rules /etc/udev/rules.d/
+sudo udevadm control --reload-rules && udevadm trigger
 
 add current user to group:
-useradd -G flirimaging <userName>
+sudo useradd -g <userName> usb
 
-run:
-roslaunch run_flir_boson.launch
+run the boson or the lepton camera:
+roslaunch flir_thermal_driver run_flir_boson.launch
+roslaunch flir_thermal_driver run_flir_lepton.launch
+
+If you get error: uvc_open: Access denied (-3)
+    check that you have permission for /dev/videoX and /dev/bus/usb/
+    sudo chown -R <userName> /dev/bus/usb/001
