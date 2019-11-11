@@ -1,5 +1,8 @@
 driver for FLIR Boson 640 thermal camera.
 
+dependencies
+sudo apt-get install libjpeg-dev libusb-1.0-0-dev
+
 installation: 
 catkin build --this
 
